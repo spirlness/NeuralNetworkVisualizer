@@ -1,0 +1,19 @@
+add_executable(CNNDiagnostic cnn_diagnostic.cpp)
+
+target_include_directories(CNNDiagnostic PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(CNNDiagnostic PRIVATE
+    # Link CNN source files
+)
+
+# Add source files
+target_sources(CNNDiagnostic PRIVATE
+    ${CMAKE_SOURCE_DIR}/src/neural_network.cpp
+    ${CMAKE_SOURCE_DIR}/src/cnn/tensor.cpp
+    ${CMAKE_SOURCE_DIR}/src/cnn/conv_layer.cpp
+    ${CMAKE_SOURCE_DIR}/src/cnn/pooling_layer.cpp
+    ${CMAKE_SOURCE_DIR}/src/cnn/flatten_layer.cpp
+    ${CMAKE_SOURCE_DIR}/src/cnn/cnn_network.cpp
+)

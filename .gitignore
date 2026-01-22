@@ -28,6 +28,10 @@
 # Local assistant/workspace
 /.claude/
 
+# AI agent/debug docs
+/**/AGENTS.md
+/CLAUDE.md
+
 # OS
 Thumbs.db
 Desktop.ini

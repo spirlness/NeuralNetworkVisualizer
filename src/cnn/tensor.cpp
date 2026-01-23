@@ -115,6 +115,27 @@ Tensor Tensor::operator+(const Tensor& other) const {
     return result;
 }
 
+void Tensor::pad(Tensor& destination, size_t padHeight, size_t padWidth, double padValue) const {
+    size_t newHeight = height_ + 2 * padHeight;
+    size_t newWidth = width_ + 2 * padWidth;
+
+    if (destination.channels() != channels_ ||
+        destination.height() != newHeight ||
+        destination.width() != newWidth) {
+        destination.resize(channels_, newHeight, newWidth);
+    }
+
+    destination.fill(padValue);
+
+    for (size_t c = 0; c < channels_; ++c) {
+        for (size_t h = 0; h < height_; ++h) {
+            for (size_t w = 0; w < width_; ++w) {
+                destination(c, h + padHeight, w + padWidth) = (*this)(c, h, w);
+            }
+        }
+    }
+}
+
 Tensor Tensor::operator-(const Tensor& other) const {
     Tensor result(*this);
     result -= other;

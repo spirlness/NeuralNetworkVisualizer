@@ -115,7 +115,7 @@ Tensor ConvolutionalLayer::forward(const Tensor& input) {
 
     const Tensor* paddedInput = &input;
     if (padding_ > 0) {
-        paddedInputBuffer_ = input.pad(padding_, padding_, 0.0);
+        input.pad(paddedInputBuffer_, padding_, padding_, 0.0);
         paddedInput = &paddedInputBuffer_;
     }
 

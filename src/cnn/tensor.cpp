@@ -1,4 +1,5 @@
 #include "cnn/tensor.h"
+#include "cnn/random.h"
 
 #include <limits>
 
@@ -77,8 +78,7 @@ void Tensor::fill(double value) {
 }
 
 void Tensor::randomInit(double min, double max) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    auto& gen = getRng();
     std::uniform_real_distribution<> dis(min, max);
     for (auto& v : data_) {
         v = dis(gen);
@@ -89,8 +89,7 @@ void Tensor::xavierInit(size_t fanIn, size_t fanOut) {
     if (fanIn == 0 || fanOut == 0) {
         throw std::invalid_argument("Xavier initialization: fanIn and fanOut must be greater than 0");
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    auto& gen = getRng();
     double limit = std::sqrt(6.0 / (static_cast<double>(fanIn) + static_cast<double>(fanOut)));
     std::uniform_real_distribution<> dis(-limit, limit);
     for (auto& v : data_) {
@@ -102,8 +101,7 @@ void Tensor::heInit(size_t fanIn) {
     if (fanIn == 0) {
         throw std::invalid_argument("He initialization: fanIn must be greater than 0");
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    auto& gen = getRng();
     double stddev = std::sqrt(2.0 / static_cast<double>(fanIn));
     std::normal_distribution<> dis(0.0, stddev);
     for (auto& v : data_) {

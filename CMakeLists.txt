@@ -40,6 +40,7 @@ set(PROJECT_SOURCES
     src/loss_chart.cpp
     src/training_thread.cpp
     src/cnn/tensor.cpp
+    src/cnn/random.cpp
     src/cnn/conv_layer.cpp
     src/cnn/pooling_layer.cpp
     src/cnn/flatten_layer.cpp

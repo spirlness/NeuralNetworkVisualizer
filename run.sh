@@ -5,11 +5,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 BUILD_TYPE="Debug"
 MODE="${1:-}"
+BUILD_GUI="ON"
 
 # Check if build directory exists
 if [ ! -d "${BUILD_DIR}" ]; then
     echo "Build directory not found. Running initial configuration..."
-    cmake -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
+    cmake -B "${BUILD_DIR}" -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" -DBUILD_GUI="${BUILD_GUI}"
     if [ $? -ne 0 ]; then
         echo "ERROR: CMake configuration failed!"
         exit 1

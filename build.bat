@@ -10,6 +10,7 @@ set "BUILD_TYPE=Release"
 set "CLEAN_BUILD=0"
 set "RUN_TESTS=0"
 set "MSYS2_PATH=F:\msys2"
+set "BUILD_GUI=ON"
 
 REM Parse arguments
 :parse_args
@@ -26,6 +27,11 @@ if /i "%1"=="--clean" (
 )
 if /i "%1"=="--test" (
     set "RUN_TESTS=1"
+    shift
+    goto :parse_args
+)
+if /i "%1"=="--no-gui" (
+    set "BUILD_GUI=OFF"
     shift
     goto :parse_args
 )
@@ -75,10 +81,19 @@ if "%CLEAN_BUILD%"=="1" (
 
 if "%USE_MSYS2%"=="1" (
     REM Convert Windows paths to Unix paths for MSYS2
-    set "UNIX_SCRIPT_DIR=/c/Users/Administrator/cpp_demo_project/NeuralNetworkVisualizer"
+    for %%I in ("%SCRIPT_DIR%") do set "SCRIPT_DRIVE=%%~dI"
+    set "SCRIPT_DRIVE=%SCRIPT_DRIVE:~0,1%"
+    set "SCRIPT_DIR_NO_DRIVE=%SCRIPT_DIR:~2%"
+    set "UNIX_SCRIPT_DIR=/%SCRIPT_DRIVE%%SCRIPT_DIR_NO_DRIVE:\=/%"
+    if "%UNIX_SCRIPT_DIR:~-1%"=="/" set "UNIX_SCRIPT_DIR=%UNIX_SCRIPT_DIR:~0,-1%"
+    for %%I in ("%BUILD_DIR%") do set "BUILD_DRIVE=%%~dI"
+    set "BUILD_DRIVE=%BUILD_DRIVE:~0,1%"
+    set "BUILD_DIR_NO_DRIVE=%BUILD_DIR:~2%"
+    set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR_NO_DRIVE:\=/%"
+    if "%UNIX_BUILD_DIR:~-1%"=="/" set "UNIX_BUILD_DIR=%UNIX_BUILD_DIR:~0,-1%"
 
     echo Configuring with CMake (MSYS2)...
-    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE%"
+    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B !UNIX_BUILD_DIR! -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"
 
     if errorlevel 1 (
         echo CMake configuration failed!
@@ -87,7 +102,7 @@ if "%USE_MSYS2%"=="1" (
 
     echo.
     echo Building project...
-    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake --build build --config %BUILD_TYPE%"
+    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake --build !UNIX_BUILD_DIR! --config %BUILD_TYPE%"
 
     if errorlevel 1 (
         echo Build failed!
@@ -96,7 +111,7 @@ if "%USE_MSYS2%"=="1" (
 ) else (
     REM Use system CMake
     echo Configuring with CMake...
-    cmake -S "%SCRIPT_DIR%." -B "%BUILD_DIR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+    cmake -S "%SCRIPT_DIR%." -B "%BUILD_DIR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%
 
     if errorlevel 1 (
         echo CMake configuration failed!
@@ -139,6 +154,7 @@ echo Options:
 echo   --debug         Build in Debug mode (default: Release)
 echo   --clean         Clean build directory before building
 echo   --test          Run tests after build
+echo   --no-gui        Build without the Qt GUI (tests/CLI only)
 echo   --msys2 [PATH] Use MSYS2 at specified path (default: F:\msys2)
 echo   -h, --help     Show this help message
 exit /b 0

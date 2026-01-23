@@ -8,6 +8,7 @@ set "SCRIPT_DIR=%~dp0"
 set "BUILD_DIR=%SCRIPT_DIR%build"
 set "BUILD_TYPE=Debug"
 set "MODE=%1"
+set "BUILD_GUI=ON"
 
 REM Default mode selection
 if "%MODE%"=="" (
@@ -17,7 +18,7 @@ if "%MODE%"=="" (
 REM Check if build directory exists
 if not exist "%BUILD_DIR%" (
     echo Build directory not found. Running initial configuration...
-    cmake -B "%BUILD_DIR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+    cmake -B "%BUILD_DIR%" -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%
     if errorlevel 1 (
         echo ERROR: CMake configuration failed!
         pause

@@ -6,10 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Qt MOC/RCC/UIC
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
+# Build options
+option(BUILD_GUI "Build Qt GUI application" ON)
 
 # Compiler-specific options
 if(MSVC)
@@ -22,17 +20,30 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 endif()
 
-# Find Qt - try Qt6 first, then Qt5
-find_package(Qt6 COMPONENTS Widgets QUIET)
-if(Qt6_FOUND)
-    message(STATUS "Using Qt6")
-    set(QT_VERSION_MAJOR 6)
-    set(QT_LIBRARIES Qt6::Widgets)
-else()
-    find_package(Qt5 COMPONENTS Widgets REQUIRED)
-    message(STATUS "Using Qt5")
-    set(QT_VERSION_MAJOR 5)
-    set(QT_LIBRARIES Qt5::Widgets)
+# Find Qt - try Qt6 first, then Qt5 (GUI build only)
+set(QT_LIBRARIES "")
+if(BUILD_GUI)
+    find_package(Qt6 COMPONENTS Widgets QUIET)
+    if(Qt6_FOUND)
+        message(STATUS "Using Qt6")
+        set(QT_VERSION_MAJOR 6)
+        set(QT_LIBRARIES Qt6::Widgets)
+    else()
+        find_package(Qt5 COMPONENTS Widgets QUIET)
+        if(Qt5_FOUND)
+            message(STATUS "Using Qt5")
+            set(QT_VERSION_MAJOR 5)
+            set(QT_LIBRARIES Qt5::Widgets)
+        endif()
+    endif()
+    if(Qt6_FOUND OR Qt5_FOUND)
+        set(CMAKE_AUTOMOC ON)
+        set(CMAKE_AUTORCC ON)
+        set(CMAKE_AUTOUIC ON)
+    else()
+        message(WARNING "Qt not found. GUI target will be skipped. Set Qt6_DIR/Qt5_DIR or CMAKE_PREFIX_PATH to enable.")
+        set(BUILD_GUI OFF CACHE BOOL "Build Qt GUI application" FORCE)
+    endif()
 endif()
 
 # Find threads
@@ -56,34 +67,38 @@ file(GLOB_RECURSE PROJECT_HEADERS
     "include/*.h"
 )
 
-# Create main executable
-add_executable(${PROJECT_NAME}
-    ${PROJECT_SOURCES}
-    ${PROJECT_HEADERS}
-)
-
-# Platform-specific executable settings (WIN32 for GUI on Windows)
-if(WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES
-        WIN32_EXECUTABLE ON
+# Create main executable (GUI)
+if(BUILD_GUI)
+    add_executable(${PROJECT_NAME}
+        ${PROJECT_SOURCES}
+        ${PROJECT_HEADERS}
     )
+
+    # Platform-specific executable settings (WIN32 for GUI on Windows)
+    if(WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+            WIN32_EXECUTABLE ON
+        )
+    endif()
+
+    # Include directories
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+    )
+
+    # Link libraries
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${QT_LIBRARIES}
+        project_thread_deps
+    )
+
+    # Install targets
+    install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin
+    )
+else()
+    message(STATUS "BUILD_GUI=OFF: skipping NeuralNetworkVisualizer GUI target.")
 endif()
-
-# Include directories
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-# Link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${QT_LIBRARIES}
-    project_thread_deps
-)
-
-# Install targets
-install(TARGETS ${PROJECT_NAME}
-    RUNTIME DESTINATION bin
-)
 
 # Add tests subdirectory
 option(BUILD_TESTS "Build test executables" ON)

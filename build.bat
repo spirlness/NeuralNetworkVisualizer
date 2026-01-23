@@ -88,6 +88,7 @@ if "%USE_MSYS2%"=="1" (
     for %%I in ("%BUILD_DIR%") do set "BUILD_DRIVE=%%~dI"
     set "BUILD_DRIVE=%BUILD_DRIVE:~0,1%"
     set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR:\=/%"
+    set "UNIX_BUILD_DIR=%UNIX_BUILD_DIR:~0,-1%"
 
     echo Configuring with CMake (MSYS2)...
     "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B !UNIX_BUILD_DIR! -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"

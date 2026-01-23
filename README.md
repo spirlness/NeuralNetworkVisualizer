@@ -26,6 +26,15 @@ cmake -S . -B build
 cmake --build build
 ```
 
+### Headless build (no Qt)
+
+If Qt is not installed, you can still build and run the tests by disabling the GUI target:
+
+```bash
+cmake -S . -B build -DBUILD_GUI=OFF
+cmake --build build
+```
+
 ### Run
 
 Windows:

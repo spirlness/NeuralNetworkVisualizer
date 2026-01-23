@@ -86,6 +86,15 @@
       "cacheVariables": {
         "BUILD_TESTS": "OFF"
       }
+    },
+    {
+      "name": "no-gui",
+      "displayName": "No GUI",
+      "inherits": "default-debug",
+      "binaryDir": "${sourceDir}/build-no-gui",
+      "cacheVariables": {
+        "BUILD_GUI": "OFF"
+      }
     }
   ],
   "buildPresets": [

@@ -27,6 +27,7 @@ chmod +x build.sh run.sh  # First time only
 | `--debug` | Build in Debug mode (default: Release) |
 | `--clean` | Clean build directory before building |
 | `--test` | Run tests after build |
+| `--no-gui` | Build without the Qt GUI (tests/CLI only) |
 | `--msys2 [PATH]` | Use MSYS2 at specified path (default: F:\msys2) |
 | `-h, --help` | Show help message |
 
@@ -41,6 +42,7 @@ build.bat --debug --clean --test
 | `--clean` | Clean build directory before building |
 | `--test` | Run tests after build |
 | `--install` | Install to system |
+| `--no-gui` | Build without the Qt GUI (tests/CLI only) |
 | `-h, --help` | Show help message |
 
 ```bash
@@ -64,6 +66,12 @@ cmake --build build --target FunctionalTest CNNDiagnostic
 ### Build Without Tests
 ```bash
 cmake -S . -B build -DBUILD_TESTS=OFF
+cmake --build build
+```
+
+### Headless Build (No Qt)
+```bash
+cmake -S . -B build -DBUILD_GUI=OFF
 cmake --build build
 ```
 
@@ -103,6 +111,11 @@ ctest --verbose                    # Verbose output
 ctest -R FunctionalTest             # Run specific test
 ```
 
+When building without the GUI target, tests are located under `build/tests`:
+```bash
+ctest --test-dir build/tests --output-on-failure
+```
+
 ### Direct Execution
 ```bash
 # Windows
@@ -133,6 +146,11 @@ sudo apt-get install cmake qt6-base-dev qt6-base-private-dev build-essential
 ./build.sh
 ```
 
+If Qt is not installed, build tests/CLI only:
+```bash
+./build.sh --no-gui
+```
+
 ### macOS
 ```bash
 # Install dependencies via Homebrew
@@ -143,6 +161,11 @@ brew install cmake qt6
 
 # Build
 ./build.sh
+```
+
+If Qt is not installed, build tests/CLI only:
+```bash
+./build.sh --no-gui
 ```
 
 ## Installation

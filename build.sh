@@ -11,6 +11,7 @@ BUILD_TYPE="Release"
 CLEAN_BUILD=false
 RUN_TESTS=false
 INSTALL=false
+BUILD_GUI="ON"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,10 @@ while [[ $# -gt 0 ]]; do
             INSTALL=true
             shift
             ;;
+        --no-gui)
+            BUILD_GUI="OFF"
+            shift
+            ;;
         -h|--help)
             echo "Usage: $0 [OPTIONS]"
             echo ""
@@ -39,6 +44,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --clean      Clean build directory before building"
             echo "  --test       Run tests after build"
             echo "  --install    Install to system"
+            echo "  --no-gui     Build without the Qt GUI (tests/CLI only)"
             echo "  -h, --help  Show this help message"
             exit 0
             ;;
@@ -76,7 +82,8 @@ echo "Configuring with CMake..."
 cmake -S "${SCRIPT_DIR}" \
       -B "${BUILD_DIR}" \
       -G "${GENERATOR}" \
-      -DCMAKE_BUILD_TYPE="${BUILD_TYPE}"
+      -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+      -DBUILD_GUI="${BUILD_GUI}"
 
 # Build
 echo ""

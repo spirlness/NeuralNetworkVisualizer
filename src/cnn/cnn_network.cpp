@@ -246,19 +246,19 @@ std::vector<double> CNNNetwork::forwardInternal(const Tensor& input) {
         current = layer->forward(current);
     }
 
-    flattenedOutput_ = current.flatten();
+    flattenedOutput_ = std::move(current.data());
 
-    std::vector<double> denseInput = flattenedOutput_;
+    const std::vector<double>* denseInputPtr = &flattenedOutput_;
 
     for (auto& layer : denseLayers_) {
-        layer.input = denseInput;
+        layer.input = *denseInputPtr;
 
         for (int j = 0; j < layer.outputSize; ++j) {
             const size_t jIdx = static_cast<size_t>(j);
             double sum = layer.biases[jIdx];
             for (int i = 0; i < layer.inputSize; ++i) {
                 const size_t iIdx = static_cast<size_t>(i);
-                sum += layer.weight(j, i) * denseInput[iIdx];
+                sum += layer.weight(j, i) * (*denseInputPtr)[iIdx];
             }
 
             switch (layer.activation) {
@@ -274,7 +274,7 @@ std::vector<double> CNNNetwork::forwardInternal(const Tensor& input) {
             }
         }
 
-        denseInput = layer.output;
+        denseInputPtr = &layer.output;
     }
 
     lastOutput_ = denseLayers_.empty() ? flattenedOutput_ : denseLayers_.back().output;

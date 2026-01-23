@@ -83,12 +83,14 @@ if "%USE_MSYS2%"=="1" (
     REM Convert Windows paths to Unix paths for MSYS2
     for %%I in ("%SCRIPT_DIR%") do set "SCRIPT_DRIVE=%%~dI"
     set "SCRIPT_DRIVE=%SCRIPT_DRIVE:~0,1%"
-    set "UNIX_SCRIPT_DIR=/%SCRIPT_DRIVE%%SCRIPT_DIR:\=/%"
-    set "UNIX_SCRIPT_DIR=%UNIX_SCRIPT_DIR:~0,-1%"
+    set "SCRIPT_DIR_NO_DRIVE=%SCRIPT_DIR:~2%"
+    set "UNIX_SCRIPT_DIR=/%SCRIPT_DRIVE%%SCRIPT_DIR_NO_DRIVE:\=/%"
+    if "%UNIX_SCRIPT_DIR:~-1%"=="/" set "UNIX_SCRIPT_DIR=%UNIX_SCRIPT_DIR:~0,-1%"
     for %%I in ("%BUILD_DIR%") do set "BUILD_DRIVE=%%~dI"
     set "BUILD_DRIVE=%BUILD_DRIVE:~0,1%"
-    set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR:\=/%"
-    set "UNIX_BUILD_DIR=%UNIX_BUILD_DIR:~0,-1%"
+    set "BUILD_DIR_NO_DRIVE=%BUILD_DIR:~2%"
+    set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR_NO_DRIVE:\=/%"
+    if "%UNIX_BUILD_DIR:~-1%"=="/" set "UNIX_BUILD_DIR=%UNIX_BUILD_DIR:~0,-1%"
 
     echo Configuring with CMake (MSYS2)...
     "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B !UNIX_BUILD_DIR! -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"
@@ -148,11 +150,11 @@ exit /b 0
 :show_help
 echo Usage: build.bat [OPTIONS]
 echo.
-    echo Options:
-    echo   --debug         Build in Debug mode (default: Release)
-    echo   --clean         Clean build directory before building
-    echo   --test          Run tests after build
-    echo   --no-gui        Build without the Qt GUI (tests/CLI only)
-    echo   --msys2 [PATH] Use MSYS2 at specified path (default: F:\msys2)
-    echo   -h, --help     Show this help message
+echo Options:
+echo   --debug         Build in Debug mode (default: Release)
+echo   --clean         Clean build directory before building
+echo   --test          Run tests after build
+echo   --no-gui        Build without the Qt GUI (tests/CLI only)
+echo   --msys2 [PATH] Use MSYS2 at specified path (default: F:\msys2)
+echo   -h, --help     Show this help message
 exit /b 0

@@ -42,7 +42,7 @@ if(BUILD_GUI)
         set(CMAKE_AUTOUIC ON)
     else()
         message(WARNING "Qt not found. GUI target will be skipped. Set Qt6_DIR/Qt5_DIR or CMAKE_PREFIX_PATH to enable.")
-        set(BUILD_GUI OFF)
+        set(BUILD_GUI OFF CACHE BOOL "Build Qt GUI application" FORCE)
     endif()
 endif()
 

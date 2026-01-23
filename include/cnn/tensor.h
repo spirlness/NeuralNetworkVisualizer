@@ -87,6 +87,12 @@ public:
     // 填充操作
     Tensor pad(size_t padHeight, size_t padWidth, double padValue = 0.0) const;
 
+    // 矩阵运算 (Added for Attention)
+    Tensor matmul(const Tensor& other) const;
+    Tensor transpose() const;
+    void softmax();
+    static Tensor randn(size_t c, size_t h, size_t w);
+
 private:
     size_t channels_;
     size_t height_;

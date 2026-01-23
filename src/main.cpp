@@ -5,6 +5,7 @@
 #include <QDebug>
 #include "mainwindow.h"
 #include "cnn_mainwindow.h"
+#include "attention_mainwindow.h"
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
@@ -24,7 +25,7 @@ int main(int argc, char *argv[]) {
     const QStringList args = parser.positionalArguments();
     
     // Determine mode from CLI or GUI
-    enum class Mode { None, MLP, CNN };
+    enum class Mode { None, MLP, CNN, Attention };
     Mode selectedMode = Mode::None;
 
     if (!args.isEmpty()) {
@@ -33,8 +34,10 @@ int main(int argc, char *argv[]) {
             selectedMode = Mode::MLP;
         } else if (mode == "cnn") {
             selectedMode = Mode::CNN;
+        } else if (mode == "attention") {
+            selectedMode = Mode::Attention;
         } else {
-            qWarning() << "Invalid mode:" << mode << "- Valid options: mlp, cnn";
+            qWarning() << "Invalid mode:" << mode << "- Valid options: mlp, cnn, attention";
         }
     }
 
@@ -47,6 +50,7 @@ int main(int argc, char *argv[]) {
 
         QPushButton* mlpButton = msgBox.addButton("MLP (Fully Connected)", QMessageBox::ActionRole);
         QPushButton* cnnButton = msgBox.addButton("CNN (Convolutional)", QMessageBox::ActionRole);
+        QPushButton* attnButton = msgBox.addButton("Attention (Transformer)", QMessageBox::ActionRole);
         msgBox.addButton(QMessageBox::Cancel);
 
         msgBox.exec();
@@ -55,6 +59,8 @@ int main(int argc, char *argv[]) {
             selectedMode = Mode::MLP;
         } else if (msgBox.clickedButton() == cnnButton) {
             selectedMode = Mode::CNN;
+        } else if (msgBox.clickedButton() == attnButton) {
+            selectedMode = Mode::Attention;
         } else {
             // User cancelled, default to MLP
             selectedMode = Mode::MLP;
@@ -68,6 +74,10 @@ int main(int argc, char *argv[]) {
         return app.exec();
     } else if (selectedMode == Mode::CNN) {
         CNNMainWindow window;
+        window.show();
+        return app.exec();
+    } else if (selectedMode == Mode::Attention) {
+        AttentionMainWindow window;
         window.show();
         return app.exec();
     }

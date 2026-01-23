@@ -41,12 +41,24 @@ target_include_directories(CNNDiagnostic PRIVATE
 
 target_link_libraries(CNNDiagnostic PRIVATE project_thread_deps)
 
+# CNN Benchmark
+add_executable(BenchmarkCNN
+    benchmark_cnn.cpp
+    ${TEST_COMMON_SOURCES}
+)
+
+target_include_directories(BenchmarkCNN PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(BenchmarkCNN PRIVATE project_thread_deps)
+
 # CTest integration
 enable_testing()
 add_test(NAME FunctionalTest COMMAND FunctionalTest)
 add_test(NAME CNNDiagnostic COMMAND CNNDiagnostic)
 
 # Install targets
-install(TARGETS FunctionalTest CNNDiagnostic
+install(TARGETS FunctionalTest CNNDiagnostic BenchmarkCNN
     RUNTIME DESTINATION bin/tests
 )

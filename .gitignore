@@ -41,3 +41,12 @@ Desktop.ini
 
 # Keep packaged release binaries
 !/dist/
+
+
+# 默认：文本文件统一用 LF 存储/检出
+* text=auto eol=lf
+
+# Windows 批处理文件用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+

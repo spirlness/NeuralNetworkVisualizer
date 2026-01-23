@@ -1,95 +1,92 @@
 cmake_minimum_required(VERSION 3.16)
 project(NeuralNetworkVisualizer VERSION 2.0 LANGUAGES CXX)
 
+# C++ Standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Qt MOC/RCC/UIC
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+# Compiler-specific options
 if(MSVC)
     add_compile_options(/utf-8)
     add_compile_options(/W3)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    if(CMAKE_BUILD_TYPE MATCHES Release)
+        add_compile_options(-O2)
+    endif()
 endif()
 
+# Find Qt - try Qt6 first, then Qt5
 find_package(Qt6 COMPONENTS Widgets QUIET)
 if(Qt6_FOUND)
     message(STATUS "Using Qt6")
     set(QT_VERSION_MAJOR 6)
+    set(QT_LIBRARIES Qt6::Widgets)
 else()
     find_package(Qt5 COMPONENTS Widgets REQUIRED)
     message(STATUS "Using Qt5")
     set(QT_VERSION_MAJOR 5)
+    set(QT_LIBRARIES Qt5::Widgets)
 endif()
 
+# Find threads
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
+# Interface library for thread dependencies
 add_library(project_thread_deps INTERFACE)
 target_link_libraries(project_thread_deps INTERFACE Threads::Threads)
-
 if(MINGW)
     target_link_libraries(project_thread_deps INTERFACE winpthread)
 endif()
 
-set(PROJECT_SOURCES
-    src/main.cpp
-    src/neural_network.cpp
-    src/mainwindow.cpp
-    src/network_view.cpp
-    src/loss_chart.cpp
-    src/training_thread.cpp
-    src/cnn/tensor.cpp
-    src/cnn/random.cpp
-    src/cnn/conv_layer.cpp
-    src/cnn/pooling_layer.cpp
-    src/cnn/flatten_layer.cpp
-    src/cnn/cnn_network.cpp
-    src/cnn/cnn_training_thread.cpp
-    src/cnn_mainwindow.cpp
-    src/visualization/cnn_view.cpp
-    src/visualization/feature_map_view.cpp
+# Collect all source files
+file(GLOB_RECURSE PROJECT_SOURCES
+    "src/*.cpp"
 )
 
-set(PROJECT_HEADERS
-    include/neural_network.h
-    include/mainwindow.h
-    include/network_view.h
-    include/loss_chart.h
-    include/training_thread.h
-    include/cnn/tensor.h
-    include/cnn/cnn_layer_base.h
-    include/cnn/conv_layer.h
-    include/cnn/pooling_layer.h
-    include/cnn/flatten_layer.h
-    include/cnn/cnn_network.h
-    include/cnn/cnn_training_thread.h
-    include/cnn_mainwindow.h
-    include/visualization/cnn_view.h
-    include/visualization/feature_map_view.h
+# Collect all header files
+file(GLOB_RECURSE PROJECT_HEADERS
+    "include/*.h"
 )
 
-add_executable(${PROJECT_NAME} WIN32
-    ${PROJECT_SOURCES} 
+# Create main executable
+add_executable(${PROJECT_NAME}
+    ${PROJECT_SOURCES}
     ${PROJECT_HEADERS}
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
-)
-
-if(QT_VERSION_MAJOR EQUAL 6)
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets)
-else()
-    target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Widgets)
-endif()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE project_thread_deps)
-
+# Platform-specific executable settings (WIN32 for GUI on Windows)
 if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         WIN32_EXECUTABLE ON
     )
 endif()
 
-add_subdirectory(tests)
+# Include directories
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    ${QT_LIBRARIES}
+    project_thread_deps
+)
+
+# Install targets
+install(TARGETS ${PROJECT_NAME}
+    RUNTIME DESTINATION bin
+)
+
+# Add tests subdirectory
+option(BUILD_TESTS "Build test executables" ON)
+if(BUILD_TESTS)
+    add_subdirectory(tests)
+endif()

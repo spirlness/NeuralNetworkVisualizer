@@ -41,6 +41,7 @@ void CNNMainWindow::setupUI() {
     inputSizeSpinBox_ = new QSpinBox();
     inputSizeSpinBox_->setRange(8, 64);
     inputSizeSpinBox_->setValue(16);
+    inputSizeSpinBox_->setToolTip("Size of the input images (Width x Height).");
     inputLayout->addWidget(inputSizeSpinBox_);
     inputLayout->addWidget(new QLabel("x"));
     inputLayout->addWidget(new QLabel("16"));
@@ -51,6 +52,7 @@ void CNNMainWindow::setupUI() {
     numClassesSpinBox_ = new QSpinBox();
     numClassesSpinBox_->setRange(2, 10);
     numClassesSpinBox_->setValue(3);
+    numClassesSpinBox_->setToolTip("Number of output classes to classify.");
     classesLayout->addWidget(numClassesSpinBox_);
     cnnConfigLayout->addLayout(classesLayout);
 
@@ -59,6 +61,7 @@ void CNNMainWindow::setupUI() {
     conv1FiltersSpinBox_ = new QSpinBox();
     conv1FiltersSpinBox_->setRange(4, 64);
     conv1FiltersSpinBox_->setValue(8);
+    conv1FiltersSpinBox_->setToolTip("Number of filters in the first convolutional layer.");
     conv1Layout->addWidget(conv1FiltersSpinBox_);
     cnnConfigLayout->addLayout(conv1Layout);
 
@@ -67,6 +70,7 @@ void CNNMainWindow::setupUI() {
     conv2FiltersSpinBox_ = new QSpinBox();
     conv2FiltersSpinBox_->setRange(8, 128);
     conv2FiltersSpinBox_->setValue(16);
+    conv2FiltersSpinBox_->setToolTip("Number of filters in the second convolutional layer.");
     conv2Layout->addWidget(conv2FiltersSpinBox_);
     cnnConfigLayout->addLayout(conv2Layout);
 
@@ -75,6 +79,7 @@ void CNNMainWindow::setupUI() {
     kernelSizeSpinBox_ = new QSpinBox();
     kernelSizeSpinBox_->setRange(3, 7);
     kernelSizeSpinBox_->setValue(3);
+    kernelSizeSpinBox_->setToolTip("Size of the convolution kernel (e.g., 3 for 3x3).");
     kernelLayout->addWidget(kernelSizeSpinBox_);
     cnnConfigLayout->addLayout(kernelLayout);
 
@@ -83,11 +88,13 @@ void CNNMainWindow::setupUI() {
     hiddenNeuronsSpinBox_ = new QSpinBox();
     hiddenNeuronsSpinBox_->setRange(16, 256);
     hiddenNeuronsSpinBox_->setValue(64);
+    hiddenNeuronsSpinBox_->setToolTip("Number of neurons in the fully connected layer.");
     hiddenLayout->addWidget(hiddenNeuronsSpinBox_);
     cnnConfigLayout->addLayout(hiddenLayout);
 
     buildButton_ = new QPushButton("Build Network");
     buildButton_->setStyleSheet("background-color: #2196F3; color: white; padding: 8px;");
+    buildButton_->setToolTip("Construct the CNN with the specified configuration.");
     connect(buildButton_, &QPushButton::clicked, this, &CNNMainWindow::onBuildNetwork);
     cnnConfigLayout->addWidget(buildButton_);
 
@@ -102,6 +109,7 @@ void CNNMainWindow::setupUI() {
     samplesSpinBox_ = new QSpinBox();
     samplesSpinBox_->setRange(10, 500);
     samplesSpinBox_->setValue(50);
+    samplesSpinBox_->setToolTip("Number of training samples generated per class.");
     samplesLayout->addWidget(samplesSpinBox_);
     dataLayout->addLayout(samplesLayout);
 
@@ -117,6 +125,7 @@ void CNNMainWindow::setupUI() {
     epochsSpinBox_->setRange(10, 1000);
     epochsSpinBox_->setValue(100);
     epochsSpinBox_->setSingleStep(10);
+    epochsSpinBox_->setToolTip("Maximum number of training epochs.");
     epochsLayout->addWidget(epochsSpinBox_);
     trainLayout->addLayout(epochsLayout);
 
@@ -127,6 +136,7 @@ void CNNMainWindow::setupUI() {
     learningRateSpinBox_->setValue(0.01);
     learningRateSpinBox_->setSingleStep(0.001);
     learningRateSpinBox_->setDecimals(4);
+    learningRateSpinBox_->setToolTip("Learning rate controls the step size during gradient descent.");
     lrLayout->addWidget(learningRateSpinBox_);
     trainLayout->addLayout(lrLayout);
 
@@ -139,21 +149,25 @@ void CNNMainWindow::setupUI() {
     startButton_ = new QPushButton("Start Training");
     startButton_->setStyleSheet("background-color: #4CAF50; color: white; padding: 10px;");
     startButton_->setEnabled(false);
+    startButton_->setToolTip("Start training the CNN.");
     connect(startButton_, &QPushButton::clicked, this, &CNNMainWindow::onStartTraining);
     buttonLayout->addWidget(startButton_);
 
     pauseButton_ = new QPushButton("Pause");
     pauseButton_->setEnabled(false);
+    pauseButton_->setToolTip("Pause or resume the training.");
     connect(pauseButton_, &QPushButton::clicked, this, &CNNMainWindow::onPauseResumeTraining);
     buttonLayout->addWidget(pauseButton_);
 
     stopButton_ = new QPushButton("Stop");
     stopButton_->setEnabled(false);
     stopButton_->setStyleSheet("background-color: #f44336; color: white;");
+    stopButton_->setToolTip("Stop the training process.");
     connect(stopButton_, &QPushButton::clicked, this, &CNNMainWindow::onStopTraining);
     buttonLayout->addWidget(stopButton_);
 
     resetButton_ = new QPushButton("Reset Network");
+    resetButton_->setToolTip("Reset the network and clear training data.");
     connect(resetButton_, &QPushButton::clicked, this, &CNNMainWindow::onResetNetwork);
     buttonLayout->addWidget(resetButton_);
 

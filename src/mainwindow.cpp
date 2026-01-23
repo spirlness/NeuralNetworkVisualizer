@@ -45,6 +45,7 @@ void MainWindow::setupUI() {
     datasetComboBox_->addItem("AND Gate");
     datasetComboBox_->addItem("OR Gate");
     datasetComboBox_->addItem("Circle Classification");
+    datasetComboBox_->setToolTip("Select a dataset to train the network on.");
     connect(datasetComboBox_, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::onDatasetChanged, Qt::QueuedConnection);
     dataLayout->addWidget(datasetComboBox_);
@@ -59,6 +60,7 @@ void MainWindow::setupUI() {
     hiddenLayerSpinBox_ = new QSpinBox();
     hiddenLayerSpinBox_->setRange(1, 5);
     hiddenLayerSpinBox_->setValue(2);
+    hiddenLayerSpinBox_->setToolTip("Number of hidden layers in the network.");
     hiddenLayerLayout->addWidget(hiddenLayerSpinBox_);
     networkLayout->addLayout(hiddenLayerLayout);
 
@@ -67,6 +69,7 @@ void MainWindow::setupUI() {
     hiddenNeuronsSpinBox_ = new QSpinBox();
     hiddenNeuronsSpinBox_->setRange(2, 32);
     hiddenNeuronsSpinBox_->setValue(8);
+    hiddenNeuronsSpinBox_->setToolTip("Number of neurons in each hidden layer.");
     neuronsLayout->addWidget(hiddenNeuronsSpinBox_);
     networkLayout->addLayout(neuronsLayout);
 
@@ -76,6 +79,7 @@ void MainWindow::setupUI() {
     activationComboBox_->addItem("Sigmoid");
     activationComboBox_->addItem("ReLU");
     activationComboBox_->addItem("Tanh");
+    activationComboBox_->setToolTip("Activation function for hidden layers.");
     activationLayout->addWidget(activationComboBox_);
     networkLayout->addLayout(activationLayout);
 
@@ -91,6 +95,7 @@ void MainWindow::setupUI() {
     epochsSpinBox_->setRange(10, 10000);
     epochsSpinBox_->setValue(1000);
     epochsSpinBox_->setSingleStep(100);
+    epochsSpinBox_->setToolTip("Maximum number of training epochs.");
     epochsLayout->addWidget(epochsSpinBox_);
     trainLayout->addLayout(epochsLayout);
 
@@ -101,6 +106,7 @@ void MainWindow::setupUI() {
     learningRateSpinBox_->setValue(0.5);
     learningRateSpinBox_->setSingleStep(0.1);
     learningRateSpinBox_->setDecimals(3);
+    learningRateSpinBox_->setToolTip("Learning rate controls how much to change the model in response to the estimated error each time the model weights are updated.");
     lrLayout->addWidget(learningRateSpinBox_);
     trainLayout->addLayout(lrLayout);
 
@@ -112,21 +118,25 @@ void MainWindow::setupUI() {
 
     startButton_ = new QPushButton("Start Training");
     startButton_->setStyleSheet("background-color: #4CAF50; color: white; padding: 10px;");
+    startButton_->setToolTip("Start training the neural network with current settings.");
     connect(startButton_, &QPushButton::clicked, this, &MainWindow::onStartTraining);
     buttonLayout->addWidget(startButton_);
 
     pauseButton_ = new QPushButton("Pause");
     pauseButton_->setEnabled(false);
+    pauseButton_->setToolTip("Pause or resume the training process.");
     connect(pauseButton_, &QPushButton::clicked, this, &MainWindow::onPauseResumeTraining);
     buttonLayout->addWidget(pauseButton_);
 
     stopButton_ = new QPushButton("Stop");
     stopButton_->setEnabled(false);
     stopButton_->setStyleSheet("background-color: #f44336; color: white;");
+    stopButton_->setToolTip("Stop the training process.");
     connect(stopButton_, &QPushButton::clicked, this, &MainWindow::onStopTraining);
     buttonLayout->addWidget(stopButton_);
 
     resetButton_ = new QPushButton("Reset Network");
+    resetButton_->setToolTip("Reset the network weights and biases.");
     connect(resetButton_, &QPushButton::clicked, this, &MainWindow::onResetNetwork);
     buttonLayout->addWidget(resetButton_);
 

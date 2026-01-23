@@ -21,6 +21,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 # Find Qt - try Qt6 first, then Qt5 (GUI build only)
+set(QT_LIBRARIES "")
 if(BUILD_GUI)
     find_package(Qt6 COMPONENTS Widgets QUIET)
     if(Qt6_FOUND)

@@ -81,8 +81,13 @@ if "%CLEAN_BUILD%"=="1" (
 
 if "%USE_MSYS2%"=="1" (
     REM Convert Windows paths to Unix paths for MSYS2
-    set "UNIX_SCRIPT_DIR=%SCRIPT_DIR:\=/%"
-    set "UNIX_BUILD_DIR=%BUILD_DIR:\=/%"
+    for %%I in ("%SCRIPT_DIR%") do set "SCRIPT_DRIVE=%%~dI"
+    set "SCRIPT_DRIVE=%SCRIPT_DRIVE:~0,1%"
+    set "UNIX_SCRIPT_DIR=/%SCRIPT_DRIVE%%SCRIPT_DIR:\=/%"
+    set "UNIX_SCRIPT_DIR=%UNIX_SCRIPT_DIR:~0,-1%"
+    for %%I in ("%BUILD_DIR%") do set "BUILD_DRIVE=%%~dI"
+    set "BUILD_DRIVE=%BUILD_DRIVE:~0,1%"
+    set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR:\=/%"
 
     echo Configuring with CMake (MSYS2)...
     "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B !UNIX_BUILD_DIR! -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"

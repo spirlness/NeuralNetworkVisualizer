@@ -53,6 +53,18 @@ target_include_directories(BenchmarkTest PRIVATE
 
 target_link_libraries(BenchmarkTest PRIVATE project_thread_deps)
 
+# CNN Benchmark
+add_executable(CNNBenchmark
+    benchmark_cnn.cpp
+    ${TEST_COMMON_SOURCES}
+)
+
+target_include_directories(CNNBenchmark PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+target_link_libraries(CNNBenchmark PRIVATE project_thread_deps)
+
 # CTest integration
 enable_testing()
 add_test(NAME FunctionalTest COMMAND FunctionalTest)

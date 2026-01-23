@@ -2,6 +2,7 @@
 #include "cnn/random.h"
 #include <limits>
 #include <string>
+#include <cstring>
 
 Tensor::Tensor() : channels_(0), height_(0), width_(0) {}
 
@@ -125,13 +126,44 @@ void Tensor::pad(Tensor& destination, size_t padHeight, size_t padWidth, double 
         destination.resize(channels_, newHeight, newWidth);
     }
 
-    destination.fill(padValue);
+    double* destData = destination.rawData();
+    const double* srcData = rawData();
+    size_t srcChannelStride = height_ * width_;
+    size_t destChannelStride = newHeight * newWidth;
 
     for (size_t c = 0; c < channels_; ++c) {
+        double* destChannel = destData + c * destChannelStride;
+        const double* srcChannel = srcData + c * srcChannelStride;
+
+        // Fill top border
+        if (padHeight > 0) {
+            std::fill(destChannel, destChannel + padHeight * newWidth, padValue);
+        }
+
+        // Process middle rows
         for (size_t h = 0; h < height_; ++h) {
-            for (size_t w = 0; w < width_; ++w) {
-                destination(c, h + padHeight, w + padWidth) = (*this)(c, h, w);
+            double* destRow = destChannel + (h + padHeight) * newWidth;
+            const double* srcRow = srcChannel + h * width_;
+
+            // Fill left border
+            if (padWidth > 0) {
+                std::fill(destRow, destRow + padWidth, padValue);
             }
+
+            // Copy input row
+            if (width_ > 0) {
+                std::memcpy(destRow + padWidth, srcRow, width_ * sizeof(double));
+            }
+
+            // Fill right border
+            if (padWidth > 0) {
+                std::fill(destRow + padWidth + width_, destRow + newWidth, padValue);
+            }
+        }
+
+        // Fill bottom border
+        if (padHeight > 0) {
+            std::fill(destChannel + (height_ + padHeight) * newWidth, destChannel + destChannelStride, padValue);
         }
     }
 }
@@ -215,14 +247,13 @@ Tensor Tensor::fromVector(const std::vector<double>& vec,
 }
 
 Tensor Tensor::pad(size_t padHeight, size_t padWidth, double padValue) const {
-    Tensor result(channels_, height_ + 2 * padHeight, width_ + 2 * padWidth, padValue);
-    for (size_t c = 0; c < channels_; ++c) {
-        for (size_t h = 0; h < height_; ++h) {
-            for (size_t w = 0; w < width_; ++w) {
-                result(c, h + padHeight, w + padWidth) = (*this)(c, h, w);
-            }
-        }
-    }
+    // Create result with correct dimensions.
+    // Note: The constructor initializes with padValue, but our optimized pad()
+    // will overwrite the necessary parts efficiently.
+    // Using a default 0.0 initialization might be slightly faster if padValue is complex,
+    // but here we just want to ensure size is correct.
+    Tensor result(channels_, height_ + 2 * padHeight, width_ + 2 * padWidth, 0.0);
+    pad(result, padHeight, padWidth, padValue);
     return result;
 }
 

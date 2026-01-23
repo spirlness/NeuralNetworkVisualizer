@@ -52,6 +52,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Qt (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          cache: true
+
       - name: Install Qt (Ubuntu)
         if: matrix.os == 'ubuntu-latest'
         uses: jurplel/install-qt-action@v4
@@ -69,6 +76,7 @@ jobs:
           modules: qtbase
 
       - name: Configure CMake
+        shell: bash
         run: |
           cmake -B build \
             -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \

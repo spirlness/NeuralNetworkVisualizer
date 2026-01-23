@@ -1,7 +1,7 @@
 #include "cnn/tensor.h"
 #include "cnn/random.h"
-
 #include <limits>
+#include <string>
 
 Tensor::Tensor() : channels_(0), height_(0), width_(0) {}
 
@@ -224,4 +224,70 @@ Tensor Tensor::pad(size_t padHeight, size_t padWidth, double padValue) const {
         }
     }
     return result;
+}
+
+Tensor Tensor::matmul(const Tensor& other) const {
+    if (channels_ != other.channels_) {
+        throw std::invalid_argument("Channel mismatch in matmul: " + std::to_string(channels_) + " vs " + std::to_string(other.channels_));
+    }
+    if (width_ != other.height_) {
+        throw std::invalid_argument("Dimension mismatch in matmul: " + std::to_string(width_) + " vs " + std::to_string(other.height_));
+    }
+
+    Tensor result(channels_, height_, other.width_);
+    for (size_t c = 0; c < channels_; ++c) {
+        for (size_t i = 0; i < height_; ++i) {
+            for (size_t k = 0; k < width_; ++k) {
+                double val = at(c, i, k);
+                for (size_t j = 0; j < other.width_; ++j) {
+                    result(c, i, j) += val * other(c, k, j);
+                }
+            }
+        }
+    }
+    return result;
+}
+
+Tensor Tensor::transpose() const {
+    Tensor result(channels_, width_, height_);
+    for (size_t c = 0; c < channels_; ++c) {
+        for (size_t h = 0; h < height_; ++h) {
+            for (size_t w = 0; w < width_; ++w) {
+                result(c, w, h) = at(c, h, w);
+            }
+        }
+    }
+    return result;
+}
+
+void Tensor::softmax() {
+    for (size_t c = 0; c < channels_; ++c) {
+        for (size_t h = 0; h < height_; ++h) {
+            double maxVal = -std::numeric_limits<double>::infinity();
+            for (size_t w = 0; w < width_; ++w) {
+                maxVal = std::max(maxVal, at(c, h, w));
+            }
+
+            double sumExp = 0.0;
+            for (size_t w = 0; w < width_; ++w) {
+                double val = std::exp(at(c, h, w) - maxVal);
+                at(c, h, w) = val;
+                sumExp += val;
+            }
+
+            for (size_t w = 0; w < width_; ++w) {
+                at(c, h, w) /= sumExp;
+            }
+        }
+    }
+}
+
+Tensor Tensor::randn(size_t c, size_t h, size_t w) {
+    Tensor t(c, h, w);
+    auto& gen = getRng();
+    std::normal_distribution<> dis(0.0, 1.0);
+    for (auto& v : t.data_) {
+        v = dis(gen);
+    }
+    return t;
 }

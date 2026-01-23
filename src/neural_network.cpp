@@ -94,6 +94,19 @@ double NeuralNetwork::activateDerivative(double x, ActivationType type) {
     }
 }
 
+double NeuralNetwork::activateDerivativeOutput(double y, ActivationType type) {
+    switch (type) {
+        case ActivationType::Sigmoid:
+            return y * (1.0 - y);
+        case ActivationType::ReLU:
+            return y > 0.0 ? 1.0 : 0.0;
+        case ActivationType::Tanh:
+            return 1.0 - y * y;
+        default:
+            return 1.0;
+    }
+}
+
 std::vector<double> NeuralNetwork::forward(const std::vector<double>& input) {
     std::lock_guard<std::mutex> lock(mutex_);
     return forwardInternal(input);
@@ -217,14 +230,7 @@ void NeuralNetwork::backwardInternal(const std::vector<double>& target) {
     for (int j = 0; j < outputLayer.outputSize; ++j) {
         const size_t jIdx = static_cast<size_t>(j);
         double error = target[jIdx] - outputLayer.output[jIdx];
-        double sum = outputLayer.biases[jIdx];
-        const size_t rowOffset = jIdx * static_cast<size_t>(outputLayer.inputSize);
-        const double* w = &outputLayer.weights[rowOffset];
-        for (int i = 0; i < outputLayer.inputSize; ++i) {
-            const size_t iIdx = static_cast<size_t>(i);
-            sum += w[iIdx] * outputLayer.input[iIdx];
-        }
-        outputLayer.delta[jIdx] = error * activateDerivative(sum, outputLayer.activation);
+        outputLayer.delta[jIdx] = error * activateDerivativeOutput(outputLayer.output[jIdx], outputLayer.activation);
     }
 
     for (int l = static_cast<int>(layers_.size()) - 2; l >= 0; --l) {
@@ -239,14 +245,7 @@ void NeuralNetwork::backwardInternal(const std::vector<double>& target) {
                 const size_t jIdx = static_cast<size_t>(j);
                 error += nextLayer.weight(j, i) * nextLayer.delta[jIdx];
             }
-            double sum = currentLayer.biases[iIdx];
-            const size_t rowOffset = iIdx * static_cast<size_t>(currentLayer.inputSize);
-            const double* w = &currentLayer.weights[rowOffset];
-            for (int k = 0; k < currentLayer.inputSize; ++k) {
-                const size_t kIdx = static_cast<size_t>(k);
-                sum += w[kIdx] * currentLayer.input[kIdx];
-            }
-            currentLayer.delta[iIdx] = error * activateDerivative(sum, currentLayer.activation);
+            currentLayer.delta[iIdx] = error * activateDerivativeOutput(currentLayer.output[iIdx], currentLayer.activation);
         }
     }
 }

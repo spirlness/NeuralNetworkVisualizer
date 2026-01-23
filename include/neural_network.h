@@ -81,6 +81,7 @@ private:
     // 激活函数
     double activate(double x, ActivationType type);
     double activateDerivative(double x, ActivationType type);
+    double activateDerivativeOutput(double y, ActivationType type);
 
     std::vector<double> forwardInternal(const std::vector<double>& input);
     void backwardInternal(const std::vector<double>& target);

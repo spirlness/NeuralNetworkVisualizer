@@ -86,6 +86,7 @@ public:
 
     // 填充操作
     Tensor pad(size_t padHeight, size_t padWidth, double padValue = 0.0) const;
+    void pad(Tensor& destination, size_t padHeight, size_t padWidth, double padValue = 0.0) const;
 
 private:
     size_t channels_;

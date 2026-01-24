@@ -11,6 +11,7 @@ set "CLEAN_BUILD=0"
 set "RUN_TESTS=0"
 set "MSYS2_PATH=F:\msys2"
 set "BUILD_GUI=ON"
+set "MSYS2_BASH="
 
 REM Parse arguments
 :parse_args
@@ -62,12 +63,20 @@ echo ========================================
 echo.
 
 REM Check if MSYS2 exists
-if exist "%MSYS2_PATH%\msys2_shell.cmd" (
+if exist "%MSYS2_PATH%\usr\bin\bash.exe" (
     set "USE_MSYS2=1"
+    set "MSYS2_BASH=%MSYS2_PATH%\usr\bin\bash.exe"
     echo Using MSYS2 at: %MSYS2_PATH%
 ) else (
-    set "USE_MSYS2=0"
-    echo Using system CMake
+    if exist "%MSYS2_PATH%\msys2_shell.cmd" (
+        REM Fallback: older MSYS2 installs
+        set "USE_MSYS2=1"
+        set "MSYS2_BASH=%MSYS2_PATH%\usr\bin\bash.exe"
+        echo Using MSYS2 at: %MSYS2_PATH%
+    ) else (
+        set "USE_MSYS2=0"
+        echo Using system CMake
+    )
 )
 echo.
 
@@ -80,20 +89,19 @@ if "%CLEAN_BUILD%"=="1" (
 )
 
 if "%USE_MSYS2%"=="1" (
-    REM Convert Windows paths to Unix paths for MSYS2
-    for %%I in ("%SCRIPT_DIR%") do set "SCRIPT_DRIVE=%%~dI"
-    set "SCRIPT_DRIVE=%SCRIPT_DRIVE:~0,1%"
+    REM Convert Windows paths to MSYS2 Unix paths without FOR
+    set "SCRIPT_DRIVE=%SCRIPT_DIR:~0,1%"
     set "SCRIPT_DIR_NO_DRIVE=%SCRIPT_DIR:~2%"
-    set "UNIX_SCRIPT_DIR=/%SCRIPT_DRIVE%%SCRIPT_DIR_NO_DRIVE:\=/%"
-    if "%UNIX_SCRIPT_DIR:~-1%"=="/" set "UNIX_SCRIPT_DIR=%UNIX_SCRIPT_DIR:~0,-1%"
-    for %%I in ("%BUILD_DIR%") do set "BUILD_DRIVE=%%~dI"
-    set "BUILD_DRIVE=%BUILD_DRIVE:~0,1%"
-    set "BUILD_DIR_NO_DRIVE=%BUILD_DIR:~2%"
-    set "UNIX_BUILD_DIR=/%BUILD_DRIVE%%BUILD_DIR_NO_DRIVE:\=/%"
-    if "%UNIX_BUILD_DIR:~-1%"=="/" set "UNIX_BUILD_DIR=%UNIX_BUILD_DIR:~0,-1%"
+    set "UNIX_SCRIPT_DIR=/!SCRIPT_DRIVE!!SCRIPT_DIR_NO_DRIVE:\=/%!"
+    if "!UNIX_SCRIPT_DIR:~-1!"=="/" set "UNIX_SCRIPT_DIR=!UNIX_SCRIPT_DIR:~0,-1!"
 
-    echo Configuring with CMake (MSYS2)...
-    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake -S . -B !UNIX_BUILD_DIR! -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"
+    set "BUILD_DRIVE=%BUILD_DIR:~0,1%"
+    set "BUILD_DIR_NO_DRIVE=%BUILD_DIR:~2%"
+    set "UNIX_BUILD_DIR=/!BUILD_DRIVE!!BUILD_DIR_NO_DRIVE:\=/%!"
+    if "!UNIX_BUILD_DIR:~-1!"=="/" set "UNIX_BUILD_DIR=!UNIX_BUILD_DIR:~0,-1!"
+
+    echo Configuring with CMake using MSYS2/MINGW64 + Ninja...
+    "%MSYS2_BASH%" -lc "cd '!UNIX_SCRIPT_DIR!' && cmake -S . -B '!UNIX_BUILD_DIR!' -G Ninja -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DBUILD_GUI=%BUILD_GUI%"
 
     if errorlevel 1 (
         echo CMake configuration failed!
@@ -102,7 +110,7 @@ if "%USE_MSYS2%"=="1" (
 
     echo.
     echo Building project...
-    "%MSYS2_PATH%\msys2_shell.cmd" -mingw64 -defterm -no-start -c "cd !UNIX_SCRIPT_DIR! && cmake --build !UNIX_BUILD_DIR! --config %BUILD_TYPE%"
+    "%MSYS2_BASH%" -lc "cmake --build '!UNIX_BUILD_DIR!'"
 
     if errorlevel 1 (
         echo Build failed!
@@ -128,11 +136,34 @@ if "%USE_MSYS2%"=="1" (
     )
 )
 
+REM Normalize output locations for single-config generators such as Ninja
+if "%USE_MSYS2%"=="1" (
+    set "OUT_DIR=%BUILD_DIR%\%BUILD_TYPE%"
+    if not exist "!OUT_DIR!" mkdir "!OUT_DIR!"
+
+    if exist "%BUILD_DIR%\NeuralNetworkVisualizer.exe" (
+        copy /y "%BUILD_DIR%\NeuralNetworkVisualizer.exe" "!OUT_DIR!\NeuralNetworkVisualizer.exe" >nul
+    )
+
+    if exist "%BUILD_DIR%\tests\FunctionalTestFixed.exe" (
+        if not exist "%BUILD_DIR%\tests\%BUILD_TYPE%" mkdir "%BUILD_DIR%\tests\%BUILD_TYPE%"
+        copy /y "%BUILD_DIR%\tests\FunctionalTestFixed.exe" "%BUILD_DIR%\tests\%BUILD_TYPE%\FunctionalTestFixed.exe" >nul
+    )
+    if exist "%BUILD_DIR%\tests\CNNDiagnostic.exe" (
+        if not exist "%BUILD_DIR%\tests\%BUILD_TYPE%" mkdir "%BUILD_DIR%\tests\%BUILD_TYPE%"
+        copy /y "%BUILD_DIR%\tests\CNNDiagnostic.exe" "%BUILD_DIR%\tests\%BUILD_TYPE%\CNNDiagnostic.exe" >nul
+    )
+)
+
 REM Run tests if requested
 if "%RUN_TESTS%"=="1" (
     echo.
     echo Running tests...
-    ctest --test-dir "%BUILD_DIR%" --output-on-failure
+    if "%USE_MSYS2%"=="1" (
+        "%MSYS2_BASH%" -lc "ctest --test-dir '!UNIX_BUILD_DIR!' --output-on-failure"
+    ) else (
+        ctest --test-dir "%BUILD_DIR%" --output-on-failure
+    )
 )
 
 echo.
@@ -142,7 +173,7 @@ echo ========================================
 echo.
 echo Executables:
 echo   - Main app: %BUILD_DIR%\%BUILD_TYPE%\NeuralNetworkVisualizer.exe
-echo   - Tests:    %BUILD_DIR%\tests\%BUILD_TYPE%\FunctionalTest.exe
+echo   - Tests:    %BUILD_DIR%\tests\%BUILD_TYPE%\FunctionalTestFixed.exe
 echo               %BUILD_DIR%\tests\%BUILD_TYPE%\CNNDiagnostic.exe
 echo.
 exit /b 0

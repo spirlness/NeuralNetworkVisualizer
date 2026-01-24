@@ -1,6 +1,7 @@
 # Build outputs
 /build/
 /build-*/
+/build_*/
 /.cache/
 /**/CMakeFiles/
 /**/CMakeCache.txt
@@ -27,13 +28,20 @@ _codeql_detected_source_root
 /.vscode/
 *.user
 *.suo
+*.VC.db
+*.VC.VC.opendb
 
 # Local assistant/workspace
 /.claude/
+/.sisyphus/
+
+# CTest
+/Testing/
 
 # AI agent/debug docs
-/**/AGENTS.md
 /CLAUDE.md
+/AGENTS.md
+/**/AGENTS.md
 
 # OS
 Thumbs.db
@@ -42,11 +50,7 @@ Desktop.ini
 # Keep packaged release binaries
 !/dist/
 
-
-# 默认：文本文件统一用 LF 存储/检出
-* text=auto eol=lf
-
-# Windows 批处理文件用 CRLF
-*.bat text eol=crlf
-*.cmd text eol=crlf
+# Local one-off debug files
+/repro_crash.cpp
+/build-mingw-test.exe
 

@@ -3,6 +3,7 @@
 
 #include "attention/transformer_block.h"
 #include <vector>
+#include <mutex>
 
 class AttentionNetwork {
 public:
@@ -15,7 +16,14 @@ public:
     const Tensor& getInput() const { return input_; }
     const Tensor& getOutput() const { return output_; }
 
+    size_t getSeqLen() const { return seqLen_; }
+    size_t getDModel() const { return d_model_; }
+    size_t getNumLayers() const { return blocks_.size(); }
+
+    std::mutex& getMutex() const { return mutex_; }
+
 private:
+    mutable std::mutex mutex_;
     size_t seqLen_;
     size_t d_model_;
 

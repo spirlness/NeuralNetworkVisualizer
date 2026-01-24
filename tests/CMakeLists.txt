@@ -15,19 +15,22 @@ set(TEST_COMMON_SOURCES
     ../src/cnn/pooling_layer.cpp
     ../src/cnn/flatten_layer.cpp
     ../src/cnn/cnn_network.cpp
+    ../src/attention/attention_network.cpp
+    ../src/attention/attention_layer.cpp
+    ../src/attention/transformer_block.cpp
 )
 
 # Functional Test
-add_executable(FunctionalTest
+add_executable(FunctionalTestFixed
     functional_test.cpp
     ${TEST_COMMON_SOURCES}
 )
 
-target_include_directories(FunctionalTest PRIVATE
+target_include_directories(FunctionalTestFixed PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-target_link_libraries(FunctionalTest PRIVATE project_thread_deps)
+target_link_libraries(FunctionalTestFixed PRIVATE project_thread_deps)
 
 # CNN Diagnostic Test
 add_executable(CNNDiagnostic
@@ -54,11 +57,10 @@ target_include_directories(BenchmarkTest PRIVATE
 target_link_libraries(BenchmarkTest PRIVATE project_thread_deps)
 
 # CTest integration
-enable_testing()
-add_test(NAME FunctionalTest COMMAND FunctionalTest)
+add_test(NAME FunctionalTest COMMAND FunctionalTestFixed)
 add_test(NAME CNNDiagnostic COMMAND CNNDiagnostic)
 
 # Install targets
-install(TARGETS FunctionalTest CNNDiagnostic BenchmarkTest
+install(TARGETS FunctionalTestFixed CNNDiagnostic BenchmarkTest
     RUNTIME DESTINATION bin/tests
 )

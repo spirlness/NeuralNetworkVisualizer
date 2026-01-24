@@ -38,7 +38,17 @@ void AttentionNetwork::initPosEncoding() {
 }
 
 Tensor AttentionNetwork::forward(const Tensor& input) {
+    std::lock_guard<std::mutex> lock(mutex_);
     input_ = input; // (1, L, 1)
+
+    // Dynamic Sequence Length Support
+    if (input.height() != seqLen_) {
+        seqLen_ = input.height();
+        if (posEncoding_.height() != seqLen_) {
+            posEncoding_.resize(1, seqLen_, d_model_);
+            initPosEncoding();
+        }
+    }
 
     // Embedding
     // (1, L, 1) * (1, 1, D) -> (1, L, D)
@@ -74,6 +84,7 @@ Tensor AttentionNetwork::forward(const Tensor& input) {
 }
 
 double AttentionNetwork::backward(const Tensor& target, double learningRate) {
+    std::lock_guard<std::mutex> lock(mutex_);
     // MSE Loss
     // L = 1/N * sum((y - t)^2)
     // dL/dy = 2/N * (y - t)

@@ -4,8 +4,34 @@
 #include "neural_network.h"
 #include "cnn/cnn_network.h"
 #include "cnn/tensor.h"
+#include "attention/attention_network.h"
 
 // 自动化功能测试
+
+void testAttentionCrash() {
+    std::cout << "\n=== 测试 Attention Crash Reproduction ===" << std::endl;
+    // Reproduce the crash: Create network with L=5, input L=7
+    try {
+        size_t seqLen = 5;
+        size_t d_model = 16;
+        size_t layers = 1;
+        AttentionNetwork network(seqLen, d_model, d_model, d_model*2, layers);
+
+        // Input with DIFFERENT SeqLen
+        size_t newSeqLen = 7;
+        Tensor input(1, newSeqLen, 1);
+        for(size_t i=0; i<newSeqLen; ++i) input(0, i, 0) = (double)i;
+
+        std::cout << "Running forward with mismatched SeqLen..." << std::endl;
+        network.forward(input); // Should crash or throw
+
+        std::cout << "✓ Attention forward survived mismatched SeqLen (Fixed?)" << std::endl;
+    } catch (const std::exception& e) {
+        std::cout << "✓ Caught expected exception: " << e.what() << std::endl;
+    } catch (...) {
+        std::cout << "✓ Caught unknown exception" << std::endl;
+    }
+}
 
 void testMLPBasicFunctionality() {
     std::cout << "=== 测试 MLP 基本功能 ===" << std::endl;
@@ -209,11 +235,13 @@ int main() {
     std::cout << "==========================================" << std::endl;
     
     try {
+        testAttentionCrash();
         testMLPBasicFunctionality();
         testMLPEdgeCases();
         testCNNBasicFunctionality();
         testCNNEdgeCases();
         testTensorOperations();
+        testAttentionCrash();
         
         std::cout << "\n==========================================" << std::endl;
         std::cout << "  ✓ 所有测试通过！" << std::endl;

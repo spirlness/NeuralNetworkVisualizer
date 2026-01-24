@@ -178,7 +178,30 @@ void AttentionMainWindow::createNetwork() {
 }
 
 void AttentionMainWindow::onStartTraining() {
-    if (!network_) createNetwork();
+    int currentSeqLen = seqLenSpinBox_->value();
+    int currentDModel = dModelSpinBox_->value();
+    int currentLayers = layersSpinBox_->value();
+
+    if (network_) {
+        // Check if architecture parameters changed
+        bool paramsChanged = false;
+        if (network_->getDModel() != (size_t)currentDModel) paramsChanged = true;
+        if (network_->getNumLayers() != (size_t)currentLayers) paramsChanged = true;
+        // SeqLen is now dynamic, but if it changed significantly we might want to reset?
+        // Actually, if seqLen changed, we definitely want the training thread to use the new one.
+        // The network handles dynamic seqLen, but we might want to update the network's concept of it.
+        if (network_->getSeqLen() != (size_t)currentSeqLen) {
+             // For visualization consistency, we accept the change. 
+             // Network will resize on first forward pass.
+        }
+
+        if (paramsChanged) {
+            log("Configuration changed. Recreating network...");
+            createNetwork();
+        }
+    } else {
+        createNetwork();
+    }
 
     lossChart_->clear();
     progressBar_->setValue(0);

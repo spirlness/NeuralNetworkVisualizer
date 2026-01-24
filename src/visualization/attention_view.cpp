@@ -22,9 +22,17 @@ void AttentionView::paintEvent(QPaintEvent* event) {
     painter.setRenderHint(QPainter::Antialiasing);
     painter.fillRect(rect(), QColor("#2d2d3d"));
 
-    if (!network_ || network_->getBlocks().empty()) {
+    if (!network_) {
         painter.setPen(Qt::white);
-        painter.drawText(rect(), Qt::AlignCenter, "No Network or Blocks Available");
+        painter.drawText(rect(), Qt::AlignCenter, "No Network Available");
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(network_->getMutex());
+
+    if (network_->getBlocks().empty()) {
+        painter.setPen(Qt::white);
+        painter.drawText(rect(), Qt::AlignCenter, "No Blocks Available");
         return;
     }
 

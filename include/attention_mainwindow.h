@@ -13,7 +13,7 @@
 #include "attention/attention_network.h"
 #include "attention/attention_training_thread.h"
 #include "visualization/attention_view.h"
-#include "visualization/loss_chart.h"
+#include "loss_chart.h"
 
 class AttentionMainWindow : public QMainWindow {
     Q_OBJECT

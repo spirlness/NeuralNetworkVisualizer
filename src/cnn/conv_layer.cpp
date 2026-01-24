@@ -175,10 +175,7 @@ Tensor ConvolutionalLayer::backward(const Tensor& gradOutput) {
         }
     }
 
-    Tensor paddedInput = lastInput_;
-    if (padding_ > 0) {
-        paddedInput = lastInput_.pad(padding_, padding_, 0.0);
-    }
+    const Tensor& paddedInput = (padding_ > 0) ? paddedInputBuffer_ : lastInput_;
 
     for (size_t oc = 0; oc < outputChannels_; ++oc) {
         for (size_t oh = 0; oh < outputHeight_; ++oh) {
